@@ -1,0 +1,327 @@
+openapi: 3.1.0
+info:
+  title: GOOD ONES API
+  version: 0.1.0
+  description: >
+    API for GOOD ONES — integrated Digital Distribution + Radio Promo platform.
+
+servers:
+  - url: http://localhost:3001
+    description: Local dev
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        user:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            email: { type: string }
+            role: { type: string }
+
+    Label:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        website: { type: string, nullable: true }
+
+    TrackInput:
+      type: object
+      required: [title, isrc, trackNumber]
+      properties:
+        title: { type: string }
+        isrc: { type: string }
+        trackNumber: { type: integer }
+
+    ReleaseInput:
+      type: object
+      required: [title, type, primaryArtist, releaseDate, tracks]
+      properties:
+        title: { type: string }
+        type:
+          type: string
+          enum: [single, ep, album]
+        primaryArtist: { type: string }
+        releaseDate:
+          type: string
+          format: date
+        upc:
+          type: string
+          nullable: true
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackInput'
+
+    Release:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        labelId: { type: string, format: uuid }
+        title: { type: string }
+        type: { type: string }
+        primaryArtist: { type: string }
+        upc: { type: string, nullable: true }
+        releaseDate:
+          type: string
+          format: date
+        tracks:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              title: { type: string }
+              isrc: { type: string }
+              trackNumber: { type: integer }
+
+    DistributionJob:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        releaseId: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [pending, processing, delivered, failed]
+        payload:
+          type: object
+        errorMessage:
+          type: string
+          nullable: true
+
+    RadioCampaignInput:
+      type: object
+      required: [title, radioDate, promoText]
+      properties:
+        title: { type: string }
+        radioDate:
+          type: string
+          format: date
+        promoText: { type: string }
+        targetListId:
+          type: string
+          nullable: true
+
+    RadioCampaign:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        releaseId: { type: string, format: uuid }
+        title: { type: string }
+        radioDate:
+          type: string
+          format: date
+        promoText: { type: string }
+        status:
+          type: string
+          enum: [draft, scheduled, sent]
+        provider: { type: string, nullable: true }
+        externalId: { type: string, nullable: true }
+        providerStatus: { type: string, nullable: true }
+
+    RadioCampaignPayload:
+      type: object
+      properties:
+        subject: { type: string }
+        radioDate: { type: string, format: date }
+        promoText: { type: string }
+        label: { type: string }
+        mainTrack:
+          type: object
+          properties:
+            title: { type: string }
+            isrc: { type: string }
+        links:
+          type: object
+
+    AnalyticsPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        opens: { type: integer }
+        plays: { type: integer }
+        downloads: { type: integer }
+
+    AnalyticsOverview:
+      type: object
+      properties:
+        releaseId: { type: string, format: uuid }
+        campaignId: { type: string, nullable: true }
+        totals:
+          type: object
+          properties:
+            opens: { type: integer }
+            plays: { type: integer }
+            downloads: { type: integer }
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsPoint'
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /auth/login:
+    post:
+      summary: Login and obtain JWT
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: JWT and user info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+  /labels/{labelId}/releases:
+    post:
+      summary: Create a new Release
+      tags: [Releases]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: labelId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseInput'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Release'
+
+  /releases/{id}/distribution:
+    post:
+      summary: Trigger Distribution job for a Release
+      tags: [Distribution]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Distribution job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistributionJob'
+
+  /releases/{releaseId}/radio-campaigns:
+    post:
+      summary: Create Radio Campaign
+      tags: [Radio]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: releaseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RadioCampaignInput'
+      responses:
+        '201':
+          description: Campaign created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RadioCampaign'
+
+  /releases/{releaseId}/radio-campaigns/{campaignId}/send:
+    post:
+      summary: Send Radio Campaign via Fake PlayMPE
+      tags: [Radio]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: releaseId
+          required: true
+        - in: path
+          name: campaignId
+          required: true
+      responses:
+        '200':
+          description: Campaign send result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  provider: { type: string }
+                  externalId: { type: string }
+                  providerStatus: { type: string }
+
+  /analytics/releases/{releaseId}/radio:
+    get:
+      summary: Get radio analytics
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: releaseId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Analytics overview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsOverview'
