@@ -10,27 +10,27 @@ import { Type } from 'class-transformer';
 
 class TrackInputDto {
   @IsString()
-  title: string;
+  title!: string;
 
   @IsString()
-  isrc: string;
+  isrc!: string;
 
   @Type(() => Number)
-  trackNumber: number;
+  trackNumber!: number;
 }
 
 export class CreateReleaseDto {
   @IsString()
-  title: string;
+  title!: string;
 
   @IsIn(['single', 'ep', 'album'])
-  type: string;
+  type!: string;
 
   @IsString()
-  primaryArtist: string;
+  primaryArtist!: string;
 
   @IsDateString()
-  releaseDate: string;
+  releaseDate!: string;
 
   @IsOptional()
   @IsString()
@@ -39,5 +39,5 @@ export class CreateReleaseDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TrackInputDto)
-  tracks: TrackInputDto[];
+  tracks!: TrackInputDto[];
 }
