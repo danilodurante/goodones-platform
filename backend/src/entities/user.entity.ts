@@ -1,18 +1,33 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../common/base.entity';
-import { Label } from './label.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { Label } from "./label.entity";
 
-@Entity('users')
-export class User extends BaseEntity {
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+
+  @Column({ unique: true })
+  email!: string;
+
   @Column()
-  email: string;
+  passwordHash!: string;
 
   @Column()
-  passwordHash: string;
+  role!: string; // "owner" | "staff" | "viewer" ecc.
 
-  @Column()
-  role: string;
+  @ManyToOne(() => Label, (label) => label.users, {
+    onDelete: "CASCADE",
+  })
+  label!: Label;
 
-  @ManyToOne(() => Label, (label) => label.users, { onDelete: 'CASCADE' })
-  label: Label;
+  @Column({ type: "timestamptz", default: () => "NOW()" })
+  createdAt!: Date;
+
+  @Column({ type: "timestamptz", default: () => "NOW()" })
+  updatedAt!: Date;
 }
