@@ -1,16 +1,5 @@
-import { IsDateString, IsOptional, IsString } from 'class-validator';
-
 export class CreateRadioCampaignDto {
-  @IsString()
-  title: string;
-
-  @IsDateString()
-  radioDate: string;
-
-  @IsString()
-  promoText: string;
-
-  @IsOptional()
-  @IsString()
-  targetListId?: string;
+  title!: string;
+  radioDate!: string;   // la data in stringa per ora va benissimo
+  promoText!: string;
 }
