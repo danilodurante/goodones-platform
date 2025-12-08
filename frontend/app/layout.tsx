@@ -1,3 +1,4 @@
+import "./globals.css";
 export const metadata = {
   title: "GOOD ONES Platform",
   description: "Distribution + Radio Promo",
