@@ -43,27 +43,36 @@ export default function RootLayout({
                 Distribution + Radio Promo
               </div>
             </div>
-            <nav
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                fontSize: 14,
-              }}
-            >
-              <a
-                href="/"
-                style={{ color: "#a3c6ff", textDecoration: "none" }}
-              >
-                Dashboard
-              </a>
-              <a
-                href="/login"
-                style={{ color: "#cfb3ff", textDecoration: "none" }}
-              >
-                Login
-              </a>
-            </nav>
+<nav
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    fontSize: 14,
+  }}
+>
+  <a href="/" style={{ color: "#a3c6ff", textDecoration: "none" }}>
+    Dashboard
+  </a>
+  <a href="/releases/new" style={{ color: "#f6d48f", textDecoration: "none" }}>
+    New Release
+  </a>
+  <a
+    href="/radio-campaigns/new"
+    style={{ color: "#ffb3c6", textDecoration: "none" }}
+  >
+    Radio Campaign
+  </a>
+  <a
+    href="/analytics/demo-release"
+    style={{ color: "#9fe6ff", textDecoration: "none" }}
+  >
+    Analytics
+  </a>
+  <a href="/login" style={{ color: "#cfb3ff", textDecoration: "none" }}>
+    Login
+  </a>
+</nav>
           </aside>
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <header
