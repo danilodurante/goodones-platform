@@ -1,33 +1,30 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../common/base.entity';
-import { Release } from './release.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { Release } from "./release.entity";
 
-@Entity('radio_campaigns')
-export class RadioCampaign extends BaseEntity {
-  @ManyToOne(() => Release, (release) => release.id, { onDelete: 'CASCADE' })
-  release: Release;
+@Entity()
+export class RadioCampaign {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
-  @Column()
-  title: string;
-
-  @Column()
-  radioDate: Date;
-
-  @Column('text')
-  promoText: string;
-
-  @Column({ nullable: true })
-  targetListId: string;
+  @ManyToOne(() => Release, {
+    onDelete: "CASCADE",
+  })
+  release!: Release;
 
   @Column()
-  status: string;
+  country!: string;
 
-  @Column({ nullable: true })
-  provider: string;
+  @Column()
+  status!: string; // "planned" | "running" | "completed"
 
-  @Column({ nullable: true })
-  externalId: string;
+  @Column({ type: "date", nullable: true })
+  startDate?: Date;
 
-  @Column({ nullable: true })
-  providerStatus: string;
+  @Column({ type: "date", nullable: true })
+  endDate?: Date;
 }
