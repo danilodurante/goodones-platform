@@ -1,28 +1,40 @@
-import { Entity, Column, ManyToOne, OneToMany } from 'typeorm';
-import { BaseEntity } from '../common/base.entity';
-import { Label } from './label.entity';
-import { Track } from './track.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { Label } from "./label.entity";
+import { Track } from "./track.entity";
 
-@Entity('releases')
-export class Release extends BaseEntity {
-  @ManyToOne(() => Label, (label) => label.releases, { onDelete: 'CASCADE' })
-  label: Label;
+@Entity()
+export class Release {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
-  @Column()
-  title: string;
-
-  @Column()
-  type: string;
-
-  @Column()
-  primaryArtist: string;
-
-  @Column({ nullable: true })
-  upc: string;
+  @ManyToOne(() => Label, (label) => label.releases, {
+    onDelete: "CASCADE",
+  })
+  label!: Label;
 
   @Column()
-  releaseDate: Date;
+  title!: string;
 
-  @OneToMany(() => Track, (track) => track.release)
-  tracks: Track[];
+  @Column()
+  type!: string; // "album" | "ep" | "single"
+
+  @Column()
+  primaryArtist!: string;
+
+  @Column()
+  upc!: string;
+
+  @Column({ type: "date" })
+  releaseDate!: Date;
+
+  @OneToMany(() => Track, (track) => track.release, {
+    cascade: true,
+  })
+  tracks!: Track[];
 }
