@@ -1,19 +1,21 @@
-import { Entity, Column, OneToMany } from 'typeorm';
-import { BaseEntity } from '../common/base.entity';
-import { User } from './user.entity';
-import { Release } from './release.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "./user.entity";
+import { Release } from "./release.entity";
 
-@Entity('labels')
-export class Label extends BaseEntity {
+@Entity()
+export class Label {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+
   @Column()
-  name: string;
+  name!: string;
 
   @Column({ nullable: true })
-  website: string;
+  website?: string;
 
   @OneToMany(() => User, (user) => user.label)
-  users: User[];
+  users!: User[];
 
   @OneToMany(() => Release, (release) => release.label)
-  releases: Release[];
+  releases!: Release[];
 }
