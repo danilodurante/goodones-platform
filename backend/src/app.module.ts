@@ -6,6 +6,12 @@ import { Release } from './entities/release.entity';
 import { Track } from './entities/track.entity';
 import { RadioCampaign } from './entities/radio-campaign.entity';
 import { DistributionJob } from './entities/distribution-job.entity';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { ReleasesModule } from './releases/releases.module';
+import { DistributionModule } from './distribution/distribution.module';
+import { RadioCampaignsModule } from './radio-campaigns/radio-campaigns.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -24,9 +30,15 @@ import { DistributionJob } from './entities/distribution-job.entity';
         RadioCampaign,
         DistributionJob,
       ],
-      synchronize: false, // in sviluppo un dev può mettere true
+      synchronize: false,
       logging: true,
     }),
+    UsersModule,
+    AuthModule,
+    ReleasesModule,
+    DistributionModule,
+    RadioCampaignsModule,
+    AnalyticsModule,
   ],
   controllers: [],
   providers: [],
