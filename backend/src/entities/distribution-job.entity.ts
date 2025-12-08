@@ -1,18 +1,30 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../common/base.entity';
-import { Release } from './release.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { Release } from "./release.entity";
 
-@Entity('distribution_jobs')
-export class DistributionJob extends BaseEntity {
-  @ManyToOne(() => Release, (release) => release.id, { onDelete: 'CASCADE' })
-  release: Release;
+@Entity()
+export class DistributionJob {
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
+
+  @ManyToOne(() => Release, {
+    onDelete: "CASCADE",
+  })
+  release!: Release;
 
   @Column()
-  status: string;
+  platform!: string; // Spotify, Apple Music, ecc.
 
-  @Column({ type: 'jsonb', nullable: true })
-  payload: any;
+  @Column()
+  status!: string; // pending, delivered, failed
 
-  @Column({ nullable: true })
-  errorMessage: string;
+  @Column({ type: "timestamptz", default: () => "NOW()" })
+  createdAt!: Date;
+
+  @Column({ type: "timestamptz", default: () => "NOW()" })
+  updatedAt!: Date;
 }
