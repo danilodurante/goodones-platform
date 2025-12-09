@@ -6,7 +6,7 @@ import {
 } from "typeorm";
 import { Release } from "./release.entity";
 
-@Entity()
+@Entity('distribution_jobs')
 export class DistributionJob {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
