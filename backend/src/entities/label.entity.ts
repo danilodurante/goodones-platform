@@ -2,7 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
 import { Release } from "./release.entity";
 
-@Entity()
+@Entity('labels')
 export class Label {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
