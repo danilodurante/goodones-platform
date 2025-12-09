@@ -6,7 +6,7 @@ import {
 } from "typeorm";
 import { Release } from "./release.entity";
 
-@Entity()
+@Entity('radio_campaigns')
 export class RadioCampaign {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
