@@ -6,7 +6,7 @@ import {
 } from "typeorm";
 import { Label } from "./label.entity";
 
-@Entity()
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
