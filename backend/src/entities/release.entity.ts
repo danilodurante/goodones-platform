@@ -8,7 +8,7 @@ import {
 import { Label } from "./label.entity";
 import { Track } from "./track.entity";
 
-@Entity()
+@Entity('releases')
 export class Release {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
