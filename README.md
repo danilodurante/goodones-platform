@@ -1,70 +1,54 @@
-GOOD ONES Platform — Distribution & Radio Promo
+# GOOD ONES — Platform
 
-Modular platform built for independent labels, combining:
+GOOD ONES is a Distribution + Radio Promo platform built as a modern full-stack application.
 
-Digital distribution tools
+This repository contains:
 
-Radio promotion workflows
+- **Backend** — NestJS + PostgreSQL  
+- **Frontend** — Next.js 14  
+- **Radio Promo Tools** — Fake PlayMPE client + payload generator  
+- **Distribution pipeline** — jobs + status tracking  
+- **Analytics module** — events + radio performance overview  
 
-Releases & metadata management
+---
 
-Analytics overview
+## Backend (NestJS)
 
-The stack includes:
+NestJS + PostgreSQL backend for:
 
-Backend — NestJS + PostgreSQL + TypeORM
+- Labels & Users management  
+- Releases & Tracks  
+- Digital Distribution (DistributionJobs)  
+- Radio Promo (RadioCampaigns) + Fake PlayMPE client  
+- Analytics (event tracking + radio overview)  
 
-Frontend — Next.js 14 + TailwindCSS
+Backend lives in:  
+`/backend`
 
-Docker environment for local development
+---
 
-Subprojects
-🔧 Backend (/backend)
+## Frontend (Next.js)
 
-NestJS API providing:
+Next.js 14 + TailwindCSS frontend providing:
 
-Auth + JWT
+- Login & auth token management  
+- Releases dashboard  
+- Distribution workflow  
+- Radio Campaign creation UI  
+- Basic analytics visualisation  
 
-Labels & Users
+Frontend lives in:  
+`/frontend`
 
-Releases & Tracks
+---
 
-Distribution Jobs (async)
+## Local development
 
-Radio Campaigns
+Make sure Docker is installed.
 
-Analytics module
+### Start backend + database
 
-➡️ See: /backend/README.md
-
-🎨 Frontend (/frontend)
-
-Next.js 14 web client:
-
-Login
-
-Releases dashboard
-
-Distribution workflows
-
-Radio Campaigns UI
-
-Basic analytics
-
-➡️ See: /frontend/README.md
-
-Development
-Run backend:
+```bash
 cd backend
-npm install
-npm run start:dev
-# Runs on http://localhost:3001
-
-Run frontend:
-cd frontend
-npm install
-npm run dev
-# Runs on http://localhost:3000
-
-
-© GOOD ONES Platform — MVP
+cp .env.example .env
+docker compose up --build
