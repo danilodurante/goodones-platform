@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -17,30 +13,37 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // ⚠️ Qui gestiamo entrambe le possibili property:
-    const hash =
-      (user as any).password_hash !== undefined &&
-      (user as any).password_hash !== null &&
-      (user as any).password_hash !== ''
-        ? (user as any).password_hash
-        : (user as any).passwordHash;
+    // Supportiamo sia snake_case che camelCase, per sicurezza
+    const anyUser = user as any;
+    const passwordHash =
+      (anyUser.password_hash as string | undefined) ??
+      (anyUser.passwordHash as string | undefined);
 
-    if (!hash) {
-      // Logghiamo il problema per debugging
-      console.error('No password hash found for user', {
-        id: (user as any).id,
-        email: (user as any).email,
-        user,
+    // Log di debug per capire cosa sta arrivando
+    console.log('DEBUG AuthService.validateUser user:', {
+      id: user.id,
+      email: user.email,
+      hasPasswordHash: !!passwordHash,
+      rawPasswordHash: passwordHash,
+      keys: Object.keys(anyUser),
+    });
+
+    // Se non abbiamo un hash valido, non chiamiamo bcrypt
+    if (!passwordHash) {
+      console.error('User found but has no password hash, denying login', {
+        id: user.id,
+        email: user.email,
       });
-      // Errore 500 lato API (meglio di far esplodere bcrypt)
-      throw new InternalServerErrorException('User password not configured');
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const match = await bcrypt.compare(password, hash);
+    const match = await bcrypt.compare(password, passwordHash);
+
     if (!match) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -49,7 +52,9 @@ export class AuthService {
   }
 
   async login(user: User) {
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const anyUser = user as any;
+    const payload = { sub: user.id, email: user.email, role: anyUser.role };
+
     const accessToken = await this.jwtService.signAsync(payload);
 
     return {
@@ -57,7 +62,7 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
+        role: anyUser.role,
       },
     };
   }
