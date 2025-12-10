@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -13,29 +17,30 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
-
     if (!user) {
-      // Nessun utente con quella email
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Supportiamo sia `passwordHash` che `password_hash`
+    // ⚠️ Qui gestiamo entrambe le possibili property:
     const hash =
-      (user as any).passwordHash ??
-      (user as any).password_hash ??
-      null;
+      (user as any).password_hash !== undefined &&
+      (user as any).password_hash !== null &&
+      (user as any).password_hash !== ''
+        ? (user as any).password_hash
+        : (user as any).passwordHash;
 
-    // Se per qualche motivo non c'è hash, non proviamo nemmeno a fare il compare
-    if (!hash || typeof hash !== 'string') {
-      console.error('User has no password hash set', {
+    if (!hash) {
+      // Logghiamo il problema per debugging
+      console.error('No password hash found for user', {
         id: (user as any).id,
         email: (user as any).email,
+        user,
       });
-      throw new UnauthorizedException('Invalid credentials');
+      // Errore 500 lato API (meglio di far esplodere bcrypt)
+      throw new InternalServerErrorException('User password not configured');
     }
 
     const match = await bcrypt.compare(password, hash);
-
     if (!match) {
       throw new UnauthorizedException('Invalid credentials');
     }
