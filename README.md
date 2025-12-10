@@ -1,77 +1,70 @@
-# goodones-platform
-Digital distribution + radio promo platform MVP
----
+GOOD ONES Platform — Distribution & Radio Promo
 
-# GOOD ONES — Frontend
+Modular platform built for independent labels, combining:
 
-Next.js 14 + TypeScript client for:
+Digital distribution tools
 
-* User authentication
-* Releases & Metadata UI
-* Digital Distribution workflows
-* Radio Campaigns interface
-* Analytics overview dashboard
+Radio promotion workflows
 
----
+Releases & metadata management
 
-## Tech stack
+Analytics overview
 
-* Next.js 14 (App Router)
-* React 18
-* TypeScript
-* TailwindCSS
-* Axios (API client)
-* Docker (optional)
+The stack includes:
 
----
+Backend — NestJS + PostgreSQL + TypeORM
 
-## Local setup (for developers)
+Frontend — Next.js 14 + TailwindCSS
 
-```bash
+Docker environment for local development
+
+Subprojects
+🔧 Backend (/backend)
+
+NestJS API providing:
+
+Auth + JWT
+
+Labels & Users
+
+Releases & Tracks
+
+Distribution Jobs (async)
+
+Radio Campaigns
+
+Analytics module
+
+➡️ See: /backend/README.md
+
+🎨 Frontend (/frontend)
+
+Next.js 14 web client:
+
+Login
+
+Releases dashboard
+
+Distribution workflows
+
+Radio Campaigns UI
+
+Basic analytics
+
+➡️ See: /frontend/README.md
+
+Development
+Run backend:
+cd backend
+npm install
+npm run start:dev
+# Runs on http://localhost:3001
+
+Run frontend:
+cd frontend
 npm install
 npm run dev
-http://localhost:3000
-```
+# Runs on http://localhost:3000
 
-Backend must be running on port **3001**.
 
----
-
-## Environment variables (`.env.local` example)
-
-```
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
-```
-
----
-
-## Project structure
-
-* `app/` — routing & pages
-* `components/` — reusable UI blocks
-* `lib/api.ts` — Axios client
-* `styles/` — Tailwind setup
-
----
-
-## Features included
-
-* Login / Logout
-* Releases listing & details
-* Upload UI (metadata-first approach)
-* Radio Campaigns creation & payload view
-* Early-stage analytics
-
----
-
-© GOOD ONES Platform — MVP Frontend
-
----
-
-Se vuoi, posso anche generare:
-
-✅ un README *più lungo e documentato*
-✅ un README *da release pubblica* (con GIF, screenshots, badges)
-✅ una doc completa in stile Notion
-
-Dimmi tu!
+© GOOD ONES Platform — MVP
