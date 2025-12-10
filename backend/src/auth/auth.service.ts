@@ -15,28 +15,27 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
+      // Nessun utente con quella email
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 🔧 Modalità demo: se è l'utente seedato, accettiamo la login
-    // anche se l'hash in DB non è mappato correttamente.
-    if (user.email === 'demo@goodones.ai') {
-      return user;
-    }
-
-    // Proviamo a recuperare l'hash da diversi possibili campi
-    const passwordHash =
-      (user as any).password_hash ??
+    // Supportiamo sia `passwordHash` che `password_hash`
+    const hash =
       (user as any).passwordHash ??
-      (user as any).password ??
+      (user as any).password_hash ??
       null;
 
-    if (!passwordHash) {
-      // Se per qualche motivo non abbiamo un hash, non chiamiamo nemmeno bcrypt
+    // Se per qualche motivo non c'è hash, non proviamo nemmeno a fare il compare
+    if (!hash || typeof hash !== 'string') {
+      console.error('User has no password hash set', {
+        id: (user as any).id,
+        email: (user as any).email,
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const match = await bcrypt.compare(password, passwordHash);
+    const match = await bcrypt.compare(password, hash);
+
     if (!match) {
       throw new UnauthorizedException('Invalid credentials');
     }
