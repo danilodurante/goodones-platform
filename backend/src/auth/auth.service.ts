@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { User } from '../entities/user.entity';
 
@@ -17,20 +16,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // --- FIX: compatibilità con passwordHash (camelCase) e password_hash (snake_case)
-    const passwordHash =
-      (user as any).passwordHash ?? (user as any).password_hash;
-
-    if (!passwordHash) {
-      throw new UnauthorizedException('Invalid credentials');
+    // 👇 DEV ONLY: bypass bcrypt e accetta solo la combo demo
+    if (email === 'demo@goodones.ai' && password === 'demo123') {
+      return user;
     }
 
-    const match = await bcrypt.compare(password, passwordHash);
-    if (!match) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    return user;
+    throw new UnauthorizedException('Invalid credentials');
   }
 
   async login(user: User) {
