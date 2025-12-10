@@ -17,7 +17,15 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const match = await bcrypt.compare(password, user.passwordHash);
+    // --- FIX: compatibilità con passwordHash (camelCase) e password_hash (snake_case)
+    const passwordHash =
+      (user as any).passwordHash ?? (user as any).password_hash;
+
+    if (!passwordHash) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const match = await bcrypt.compare(password, passwordHash);
     if (!match) {
       throw new UnauthorizedException('Invalid credentials');
     }
