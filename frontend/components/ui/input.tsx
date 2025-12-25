@@ -9,28 +9,13 @@ export type InputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   "size"
 > & {
-  /** Label sopra il campo */
   label?: string;
-
-  /** Testo helper (default) */
   helperText?: string;
-
-  /** Testo di errore (mostrato se variant=error) */
   errorText?: string;
-
-  /** Variante visuale */
   variant?: InputVariant;
-
-  /** Icona a sinistra */
   leftIcon?: React.ReactNode;
-
-  /** Icona a destra (es. clear, show/hide) */
   rightIcon?: React.ReactNode;
-
-  /** Callback click su icona destra */
   onRightIconClick?: () => void;
-
-  /** Full width di default */
   fullWidth?: boolean;
 };
 
@@ -57,12 +42,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <div className={cn(fullWidth && "w-full")}>
-        {/* LABEL */}
         {label && (
           <label
             htmlFor={inputId}
             className={cn(
-              "mb-1 block text-sm font-medium text-zinc-900",
+              "mb-2 block text-sm font-medium",
+              "text-[color:var(--ds-field-label)]",
               disabled && "opacity-60"
             )}
           >
@@ -70,51 +55,55 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
 
-        {/* INPUT WRAPPER */}
         <div
           className={cn(
-            "relative flex items-center rounded-md border bg-transparent transition-colors",
-            "focus-within:ring-2 focus-within:ring-zinc-900/10",
+            "relative flex items-center",
+            "h-11 w-full",
+            "rounded-[var(--ds-field-radius)] border",
+            "bg-[color:var(--ds-field-bg)]",
+            "transition-colors",
             disabled && "opacity-60",
             isError
-              ? "border-red-500"
-              : "border-zinc-300 focus-within:border-zinc-900"
+              ? "border-[color:var(--ds-field-border-error)]"
+              : "border-[color:var(--ds-field-border)] hover:border-[color:var(--ds-field-border-hover)]",
+            "focus-within:border-[color:var(--ds-field-border-focus)]",
+            "focus-within:ring-2 focus-within:ring-[color:var(--ds-field-ring)]"
           )}
         >
-          {/* ICON LEFT */}
           {leftIcon && (
-            <span className="pointer-events-none absolute left-3 inline-flex items-center text-zinc-500">
+            <span className="pointer-events-none absolute left-3 inline-flex items-center text-white/60">
               {leftIcon}
             </span>
           )}
 
-          {/* INPUT */}
           <input
             ref={ref}
             id={inputId}
             disabled={disabled}
             aria-invalid={isError || undefined}
             className={cn(
-              "h-11 w-full bg-transparent px-3 text-sm outline-none",
-              "placeholder:text-zinc-400",
+              "h-full w-full",
+              "appearance-none bg-transparent", // 🔑 FIX browser style
+              "px-3 text-sm outline-none",
+              "text-[color:var(--ds-field-text)]",
+              "placeholder:text-[color:var(--ds-field-placeholder)]",
               leftIcon && "pl-10",
-              rightIcon && "pr-10",
+              rightIcon && "pr-11",
               className
             )}
             {...props}
           />
 
-          {/* ICON RIGHT */}
           {rightIcon && (
             <button
               type="button"
               tabIndex={onRightIconClick ? 0 : -1}
               onClick={onRightIconClick}
               className={cn(
-                "absolute right-2 inline-flex h-8 w-8 items-center justify-center rounded-md transition",
+                "absolute right-2 inline-flex h-8 w-8 items-center justify-center rounded-md",
                 onRightIconClick
-                  ? "hover:bg-zinc-100"
-                  : "pointer-events-none"
+                  ? "text-white/70 hover:bg-white/5 hover:text-white/90"
+                  : "pointer-events-none text-white/50"
               )}
               aria-label={onRightIconClick ? "Input action" : undefined}
             >
@@ -123,12 +112,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
 
-        {/* HELPER / ERROR */}
         {(isError ? errorText : helperText) && (
           <p
             className={cn(
-              "mt-1 text-xs",
-              isError ? "text-red-600" : "text-zinc-500"
+              "mt-2 text-xs",
+              isError
+                ? "text-[color:var(--ds-field-error)]"
+                : "text-[color:var(--ds-field-helper)]"
             )}
           >
             {isError ? errorText : helperText}
