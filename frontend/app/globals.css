@@ -7,3 +7,32 @@
 body {
   margin: 0;
 }
+
+/* =========================
+   Good Ones Design System
+   Tokens (Field / Input)
+   ========================= */
+:root {
+  /* Surface */
+  --ds-field-bg: rgba(255, 255, 255, 0.02);
+  --ds-field-bg-disabled: rgba(255, 255, 255, 0.04);
+
+  /* Border */
+  --ds-field-border: rgba(255, 255, 255, 0.14);
+  --ds-field-border-hover: rgba(255, 255, 255, 0.22);
+  --ds-field-border-focus: rgba(255, 255, 255, 0.30);
+  --ds-field-border-error: rgba(239, 68, 68, 0.85);
+
+  /* Text */
+  --ds-field-text: rgba(255, 255, 255, 0.92);
+  --ds-field-placeholder: rgba(255, 255, 255, 0.45);
+  --ds-field-label: rgba(255, 255, 255, 0.88);
+  --ds-field-helper: rgba(255, 255, 255, 0.55);
+  --ds-field-error: rgba(239, 68, 68, 0.95);
+
+  /* Ring */
+  --ds-field-ring: rgba(255, 255, 255, 0.10);
+
+  /* Radius */
+  --ds-field-radius: 10px;
+}
