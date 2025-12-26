@@ -82,8 +82,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             aria-invalid={isError || undefined}
             className={cn(
-              "h-full w-full",
-              "appearance-none bg-transparent", // 🔑 FIX browser style
+             "h-full w-full appearance-none bg-green-500"
               "px-3 text-sm outline-none",
               "text-[color:var(--ds-field-text)]",
               "placeholder:text-[color:var(--ds-field-placeholder)]",
