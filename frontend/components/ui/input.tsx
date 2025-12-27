@@ -1,129 +1,135 @@
-"use client";
-
 import * as React from "react";
-import { cn } from "@/lib/cn";
+import { Field } from "./field";
 
-type InputVariant = "default" | "error";
+export interface InputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
+  label?: React.ReactNode;
+  helperText?: React.ReactNode;
+  errorText?: React.ReactNode;
 
-export type InputProps = Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "size"
-> & {
-  label?: string;
-  helperText?: string;
-  errorText?: string;
-  variant?: InputVariant;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  onRightIconClick?: () => void;
-  fullWidth?: boolean;
-};
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  function Input(
+  /** Se presente, la rightIcon diventa un'azione cliccabile (es. clear) */
+  onRightIconClick?: () => void;
+}
+
+function normalizeIcon(icon: React.ReactNode): React.ReactNode {
+  if (!icon || !React.isValidElement(icon)) return icon;
+
+  return React.cloneElement(icon as any, {
+    size: 16,
+    width: 16,
+    height: 16,
+    style: { width: 16, height: 16, display: "block" },
+  });
+}
+
+/**
+ * Spaziature robuste (inline) => non vengono “purgate” e non dipendono da classi dinamiche.
+ * Regola qui se vuoi più/meno stacco.
+ */
+const ICON_COL_PX = 52; // larghezza colonna icona (px)
+const INPUT_PAD_X_PX = 12; // padding base quando NON ci sono icone
+const GAP_AFTER_ICON_PX = 12; // gap tra colonna icona e testo (stacco percepito)
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  (
     {
+      id,
       label,
       helperText,
       errorText,
-      variant = "default",
       leftIcon,
       rightIcon,
       onRightIconClick,
-      fullWidth = true,
-      className,
-      id,
       disabled,
+      className = "",
       ...props
     },
     ref
-  ) {
-    const inputId = id ?? React.useId();
-    const isError = variant === "error" || Boolean(errorText);
+  ) => {
+    const hasError = Boolean(errorText);
+    const hasLeft = Boolean(leftIcon);
+    const hasRight = Boolean(rightIcon);
+
+    const left = normalizeIcon(leftIcon);
+    const right = normalizeIcon(rightIcon);
+
+    const wrapperCls =
+      "relative flex items-center h-11 rounded-md border bg-background overflow-hidden " +
+      "focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 " +
+      "disabled:cursor-not-allowed disabled:opacity-60 " +
+      (hasError ? "border-destructive focus-within:ring-destructive/40 " : "");
+
+    // padding che deve SEMPRE funzionare (inline)
+    const inputStyle: React.CSSProperties = {
+      paddingLeft: hasLeft ? GAP_AFTER_ICON_PX : INPUT_PAD_X_PX,
+      paddingRight: hasRight ? GAP_AFTER_ICON_PX : INPUT_PAD_X_PX,
+    };
 
     return (
-      <div className={cn(fullWidth && "w-full")}>
-        {label && (
-          <label
-            htmlFor={inputId}
-            className={cn(
-              "mb-2 block text-sm font-medium",
-              "text-[color:var(--ds-field-label)]",
-              disabled && "opacity-60"
-            )}
-          >
-            {label}
-          </label>
-        )}
-
-        <div
-          className={cn(
-            "relative flex items-center",
-            "h-11 w-full",
-            "rounded-[var(--ds-field-radius)] border",
-            "bg-[color:var(--ds-field-bg)]",
-            "transition-colors",
-            disabled && "opacity-60",
-            isError
-              ? "border-[color:var(--ds-field-border-error)]"
-              : "border-[color:var(--ds-field-border)] hover:border-[color:var(--ds-field-border-hover)]",
-            "focus-within:border-[color:var(--ds-field-border-focus)]",
-            "focus-within:ring-2 focus-within:ring-[color:var(--ds-field-ring)]"
-          )}
-        >
-          {leftIcon && (
-            <span className="pointer-events-none absolute left-3 inline-flex items-center text-white/60">
-              {leftIcon}
-            </span>
+      <Field
+        id={id ?? "input"}
+        label={label}
+        helperText={helperText}
+        errorText={errorText}
+        disabled={disabled}
+      >
+        <div className={wrapperCls}>
+          {/* LEFT ICON COLUMN */}
+          {hasLeft && (
+            <div
+              className="flex h-full items-center justify-center text-muted-foreground"
+              style={{ width: ICON_COL_PX, paddingTop: 1 }} // optical align
+            >
+              {left}
+            </div>
           )}
 
+          {/* INPUT */}
           <input
             ref={ref}
-            id={inputId}
+            id={id}
             disabled={disabled}
-            aria-invalid={isError || undefined}
-            className={cn(
-             "h-full w-full appearance-none bg-green-500"
-              "px-3 text-sm outline-none",
-              "text-[color:var(--ds-field-text)]",
-              "placeholder:text-[color:var(--ds-field-placeholder)]",
-              leftIcon && "pl-10",
-              rightIcon && "pr-11",
+            aria-invalid={hasError || undefined}
+            className={
+              "flex-1 h-full bg-transparent outline-none " +
+              "text-sm leading-5 text-foreground placeholder:text-muted-foreground " +
               className
-            )}
+            }
+            style={inputStyle}
             {...props}
           />
 
-          {rightIcon && (
-            <button
-              type="button"
-              tabIndex={onRightIconClick ? 0 : -1}
-              onClick={onRightIconClick}
-              className={cn(
-                "absolute right-2 inline-flex h-8 w-8 items-center justify-center rounded-md",
-                onRightIconClick
-                  ? "text-white/70 hover:bg-white/5 hover:text-white/90"
-                  : "pointer-events-none text-white/50"
-              )}
-              aria-label={onRightIconClick ? "Input action" : undefined}
+          {/* RIGHT ICON / ACTION */}
+          {hasRight && (
+            <div
+              className="flex h-full items-center justify-center"
+              style={{ width: ICON_COL_PX, paddingTop: 1 }} // optical align
             >
-              {rightIcon}
-            </button>
+              {onRightIconClick ? (
+                <button
+                  type="button"
+                  onClick={onRightIconClick}
+                  disabled={disabled}
+                  aria-label="Clear"
+                  className="appearance-none bg-transparent border-0 m-0 inline-flex h-8 w-8 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground outline-none focus:outline-none focus:ring-0 disabled:opacity-60"
+                  style={{ WebkitAppearance: "none" as any }}
+                >
+                  {right}
+                </button>
+              ) : (
+                <div className="text-muted-foreground">{right}</div>
+              )}
+            </div>
           )}
         </div>
-
-        {(isError ? errorText : helperText) && (
-          <p
-            className={cn(
-              "mt-2 text-xs",
-              isError
-                ? "text-[color:var(--ds-field-error)]"
-                : "text-[color:var(--ds-field-helper)]"
-            )}
-          >
-            {isError ? errorText : helperText}
-          </p>
-        )}
-      </div>
+      </Field>
     );
   }
 );
+
+Input.displayName = "Input";
+export { Input };
+

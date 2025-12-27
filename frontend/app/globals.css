@@ -1,7 +1,22 @@
+/* =========================
+   Tailwind layers (OBBLIGATORI)
+========================= */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================
+   Base reset
+========================= */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
@@ -9,30 +24,96 @@ body {
 }
 
 /* =========================
-   Good Ones Design System
-   Tokens (Field / Input)
-   ========================= */
+   Design System tokens (Good Ones)
+========================= */
 :root {
-  /* Surface */
-  --ds-field-bg: rgba(255, 255, 255, 0.02);
-  --ds-field-bg-disabled: rgba(255, 255, 255, 0.04);
+  /* page */
+  --ds-bg: #070a12;
 
-  /* Border */
-  --ds-field-border: rgba(255, 255, 255, 0.14);
-  --ds-field-border-hover: rgba(255, 255, 255, 0.22);
-  --ds-field-border-focus: rgba(255, 255, 255, 0.30);
-  --ds-field-border-error: rgba(239, 68, 68, 0.85);
+  /* field background & border */
+  --ds-field-bg: #0c1222;
+  --ds-field-border: rgba(255, 255, 255, 0.12);
+  --ds-field-border-hover: rgba(255, 255, 255, 0.18);
+  --ds-field-border-focus: rgba(255, 255, 255, 0.28);
 
-  /* Text */
+  /* field text */
   --ds-field-text: rgba(255, 255, 255, 0.92);
   --ds-field-placeholder: rgba(255, 255, 255, 0.45);
-  --ds-field-label: rgba(255, 255, 255, 0.88);
-  --ds-field-helper: rgba(255, 255, 255, 0.55);
-  --ds-field-error: rgba(239, 68, 68, 0.95);
+  --ds-field-helper: rgba(255, 255, 255, 0.65);
 
-  /* Ring */
-  --ds-field-ring: rgba(255, 255, 255, 0.10);
+  /* error */
+  --ds-field-error: #ff4d4f;
+  --ds-field-error-border: rgba(255, 77, 79, 0.7);
 
-  /* Radius */
-  --ds-field-radius: 10px;
+  /* disabled */
+  --ds-field-disabled-bg: rgba(255, 255, 255, 0.08);
+  --ds-field-disabled-text: rgba(255, 255, 255, 0.35);
+
+  /* radius */
+  --ds-radius-field: 10px;
+
+  /* focus ring */
+  --ds-field-ring-w: 3px;
+  --ds-field-ring: rgba(255, 255, 255, 0.14);
+  --ds-field-ring-error: rgba(255, 77, 79, 0.22);
 }
+
+/* =========================
+   DS Field (shared Input / Textarea)
+========================= */
+.ds-field {
+  border-radius: var(--ds-radius-field);
+  background: var(--ds-field-bg);
+  border: 1px solid var(--ds-field-border);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+.ds-field:hover {
+  border-color: var(--ds-field-border-hover);
+}
+
+.ds-field:focus-within {
+  border-color: var(--ds-field-border-focus);
+  box-shadow: 0 0 0 var(--ds-field-ring-w) var(--ds-field-ring);
+}
+
+.ds-field--error {
+  border-color: var(--ds-field-error-border);
+}
+
+.ds-field--error:focus-within {
+  box-shadow: 0 0 0 var(--ds-field-ring-w) var(--ds-field-ring-error);
+}
+
+.ds-field--disabled {
+  background: var(--ds-field-disabled-bg);
+  border-color: var(--ds-field-border);
+}
+
+.ds-field--disabled:hover {
+  border-color: var(--ds-field-border);
+}
+
+/* =========================
+   Remove browser form styles
+========================= */
+input,
+textarea,
+select,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+textarea {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
