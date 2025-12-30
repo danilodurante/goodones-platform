@@ -45,3 +45,6 @@ Workflow.docx
 *.swp
 *.swo
 
+# TypeScript build info
+*.tsbuildinfo
+

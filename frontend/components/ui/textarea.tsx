@@ -1,115 +1,72 @@
+"use client";
+
 import * as React from "react";
-import { Field } from "./field";
+import { cn } from "@/lib/utils";
 
-export interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: React.ReactNode;
-  helperText?: React.ReactNode;
-  errorText?: React.ReactNode;
+export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label?: string;
+  helperText?: string;
+  errorText?: string;
+};
 
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
+export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ id, label, helperText, errorText, disabled, className, ...props }, ref) => {
+    const autoId = React.useId();
+    const textareaId = id ?? autoId;
 
-  showCounter?: boolean;
-}
-
-const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  (
-    {
-      className = "",
-      id,
-      label,
-      helperText,
-      errorText,
-      leftIcon,
-      rightIcon,
-      showCounter,
-      maxLength,
-      value,
-      defaultValue,
-      disabled,
-      required,
-      rows = 4,
-      ...props
-    },
-    ref
-  ) => {
-    const stringValue =
-      typeof value === "string"
-        ? value
-        : typeof defaultValue === "string"
-        ? defaultValue
-        : "";
-
-    const valueLength = stringValue.length;
     const hasError = Boolean(errorText);
 
-    // Allineamento ottico alla prima riga (con py-3 e text-sm/leading-5)
-    // 0.875rem ≈ 14px: funziona bene con top padding 12px
-    const iconTop = "0.875rem";
+    const helperId = helperText ? `${textareaId}-help` : undefined;
+    const errorId = errorText ? `${textareaId}-error` : undefined;
+    const describedBy = [hasError ? errorId : helperId].filter(Boolean).join(" ");
 
     return (
-      <Field
-        id={id ?? "textarea"}
-        label={label}
-        required={required}
-        helperText={helperText}
-        errorText={errorText}
-        showCounter={showCounter}
-        maxLength={maxLength}
-        valueLength={valueLength}
-        disabled={disabled}
-      >
-        <div className="relative">
-          {leftIcon ? (
-            <div className="pointer-events-none absolute left-3" style={{ top: iconTop }}>
-              <span className="text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
-                {leftIcon}
-              </span>
-            </div>
-          ) : null}
+      <div className={cn("space-y-2", className)}>
+        {label && (
+          <label
+            htmlFor={textareaId}
+            className="text-sm text-muted-foreground"
+          >
+            {label}
+          </label>
+        )}
 
+        <div
+          className={cn(
+            "ds-field",
+            disabled && "ds-field--disabled",
+            hasError && "ds-field--error"
+          )}
+        >
           <textarea
             ref={ref}
-            id={id}
+            id={textareaId}
             disabled={disabled}
             aria-invalid={hasError || undefined}
-            aria-describedby={`${id}-message`}
-            rows={rows}
-            className={`
-              w-full resize-none rounded-md border bg-background
-              text-sm leading-5 text-foreground
-              placeholder:text-muted-foreground
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
-              disabled:cursor-not-allowed disabled:opacity-60
-              ${hasError ? "border-destructive focus-visible:ring-destructive/40" : ""}
-              ${className}
-            `}
-            style={{
-              paddingTop: "0.75rem",
-              paddingBottom: "0.75rem",
-              paddingLeft: leftIcon ? "2.5rem" : "0.75rem",
-              paddingRight: rightIcon ? "2.5rem" : "0.75rem",
-            }}
-            maxLength={maxLength}
-            value={value}
-            defaultValue={defaultValue}
+            aria-describedby={describedBy || undefined}
+            className={cn(
+              "min-h-[140px] w-full resize-none rounded-[var(--ds-radius-field)] bg-transparent p-4 text-sm",
+              "text-[color:var(--ds-field-text)] placeholder:text-[color:var(--ds-field-placeholder)]",
+              "outline-none",
+              disabled && "cursor-not-allowed"
+            )}
             {...props}
           />
-
-          {rightIcon ? (
-            <div className="pointer-events-none absolute right-3" style={{ top: iconTop }}>
-              <span className="text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
-                {rightIcon}
-              </span>
-            </div>
-          ) : null}
         </div>
-      </Field>
+
+        {hasError ? (
+          <p id={errorId} className="text-sm text-[color:var(--ds-field-error)]">
+            {errorText}
+          </p>
+        ) : helperText ? (
+          <p id={helperId} className="text-sm text-[color:var(--ds-field-helper)]">
+            {helperText}
+          </p>
+        ) : null}
+      </div>
     );
   }
 );
 
 Textarea.displayName = "Textarea";
-export { Textarea };
 

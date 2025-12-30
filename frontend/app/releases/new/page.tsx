@@ -1,294 +1,258 @@
 "use client";
 
-import { useState } from "react";
+import * as React from "react";
 
-type TrackInput = {
-  title: string;
-  isrc: string;
-  trackNumber: number;
-};
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+
+/* -------------------------------------------------
+   Debug flag (from .env.local)
+-------------------------------------------------- */
+const SHOW_DEBUG =
+  typeof process !== "undefined" &&
+  process.env.NEXT_PUBLIC_SHOW_DEBUG === "true";
 
 export default function NewReleasePage() {
-  const [labelId, setLabelId] = useState("");
-  const [title, setTitle] = useState("");
-  const [type, setType] = useState<"single" | "ep" | "album">("single");
-  const [primaryArtist, setPrimaryArtist] = useState("");
-  const [releaseDate, setReleaseDate] = useState("");
-  const [upc, setUpc] = useState("");
-  const [tracks, setTracks] = useState<TrackInput[]>([
-    { title: "", isrc: "", trackNumber: 1 },
-  ]);
+  /* -------------------------------------------------
+     Mounted (hydration-safe)
+  -------------------------------------------------- */
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  /* -------------------------------------------------
+     Step 1 — Release info
+  -------------------------------------------------- */
+  const [artistName, setArtistName] = React.useState("");
+  const [releaseTitle, setReleaseTitle] = React.useState("");
+  const [country, setCountry] = React.useState<string | null>(null);
+  const [status, setStatus] = React.useState("draft");
+  const [notes, setNotes] = React.useState("");
 
-  function updateTrack(index: number, field: keyof TrackInput, value: string) {
-    setTracks((prev) =>
-      prev.map((t, i) =>
-        i === index ? { ...t, [field]: field === "trackNumber" ? Number(value) : value } : t
-      )
-    );
-  }
+  /* -------------------------------------------------
+     Step 2 — Links & assets
+  -------------------------------------------------- */
+  const [streamingLink, setStreamingLink] = React.useState("");
+  const [pressFolderLink, setPressFolderLink] = React.useState("");
+  const [artworkLink, setArtworkLink] = React.useState("");
+  const [privateNotes, setPrivateNotes] = React.useState("");
 
-  function addTrack() {
-    setTracks((prev) => [
-      ...prev,
-      { title: "", isrc: "", trackNumber: prev.length + 1 },
-    ]);
-  }
+  /* -------------------------------------------------
+     UI state
+  -------------------------------------------------- */
+  const [isSaving, setIsSaving] = React.useState(false);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setResult(null);
-    setLoading(true);
+  const canSave =
+    artistName.trim() !== "" && releaseTitle.trim() !== "";
 
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("goodones_token")
-      : null;
+  /* -------------------------------------------------
+     Build payload (shared)
+  -------------------------------------------------- */
+  const buildPayload = () => ({
+    artistName: artistName || null,
+    releaseTitle: releaseTitle || null,
+    country,
+    status,
+    notes: notes || null,
+    links: {
+      streaming: streamingLink || null,
+      pressFolder: pressFolderLink || null,
+      artwork: artworkLink || null,
+    },
+    privateNotes: privateNotes || null,
+    meta: {
+      schemaVersion: 1,
+    },
+  });
 
-    if (!token) {
-      setError("Missing token. Please login first.");
-      setLoading(false);
-      return;
-    }
+  /* -------------------------------------------------
+     Actions
+  -------------------------------------------------- */
+  const handleCancel = () => {
+    setArtistName("");
+    setReleaseTitle("");
+    setCountry(null);
+    setStatus("draft");
+    setNotes("");
+    setStreamingLink("");
+    setPressFolderLink("");
+    setArtworkLink("");
+    setPrivateNotes("");
+  };
 
-    try {
-      const res = await fetch(
-        `http://localhost:3001/labels/${labelId}/releases`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            title,
-            type,
-            primaryArtist,
-            releaseDate,
-            upc: upc || undefined,
-            tracks,
-          }),
-        }
-      );
+  const handleSave = () => {
+    if (!canSave) return;
 
-      if (!res.ok) {
-        const text = await res.text();
-        setError(`Error ${res.status}: ${text}`);
-        setLoading(false);
-        return;
-      }
+    setIsSaving(true);
 
-      const data = await res.json();
-      setResult(data);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setError("Unexpected error");
-      setLoading(false);
-    }
-  }
+    const payload = {
+      ...buildPayload(),
+      meta: {
+        ...buildPayload().meta,
+        createdAtLocalISO: new Date().toISOString(),
+      },
+    };
 
+    console.log("RELEASE PAYLOAD", payload);
+
+    window.setTimeout(() => {
+      setIsSaving(false);
+    }, 900);
+  };
+
+  /* -------------------------------------------------
+     Render
+  -------------------------------------------------- */
   return (
-    <div style={{ maxWidth: 900 }}>
-      <h1 style={{ fontSize: 22, marginBottom: 8 }}>New Release</h1>
-      <p style={{ fontSize: 13, color: "#9ea4c2", marginBottom: 20 }}>
-        Minimal upload form that calls the GOOD ONES backend
-        <code> POST /labels/:labelId/releases</code>.
-      </p>
+    <main className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto w-full max-w-5xl px-8 py-16 space-y-12">
+        {/* Header */}
+        <header className="space-y-3">
+          <h1 className="text-5xl font-semibold tracking-tight">
+            New release
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Create a release draft. (Local state only)
+          </p>
+        </header>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "grid", gap: 14, fontSize: 13 }}
-      >
-        <div style={{ display: "grid", gap: 4 }}>
-          <label>Label ID</label>
-          <input
-            value={labelId}
-            onChange={(e) => setLabelId(e.target.value)}
-            placeholder="Paste label UUID"
-            required
-            style={inputStyle}
-          />
-        </div>
+        {/* Form */}
+        <section className="space-y-12">
+          {/* Step 1 */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold">Release info</h2>
 
-        <div style={{ display: "grid", gap: 4 }}>
-          <label>Release title</label>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            style={inputStyle}
-          />
-        </div>
+            <Input
+              label="Artist name"
+              placeholder="e.g. Makaya McCraven"
+              value={artistName}
+              onChange={(e) => setArtistName(e.target.value)}
+            />
 
-        <div style={{ display: "grid", gap: 4 }}>
-          <label>Type</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as any)}
-            style={inputStyle}
-          >
-            <option value="single">Single</option>
-            <option value="ep">EP</option>
-            <option value="album">Album</option>
-          </select>
-        </div>
+            <Input
+              label="Release title"
+              placeholder="e.g. In These Times"
+              value={releaseTitle}
+              onChange={(e) => setReleaseTitle(e.target.value)}
+            />
 
-        <div style={{ display: "grid", gap: 4 }}>
-          <label>Primary artist</label>
-          <input
-            value={primaryArtist}
-            onChange={(e) => setPrimaryArtist(e.target.value)}
-            required
-            style={inputStyle}
-          />
-        </div>
+            {/* Country */}
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Country / Territory
+              </p>
+              <Select value={country ?? ""} onValueChange={setCountry}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a country" />
+                </SelectTrigger>
 
-        <div style={{ display: "grid", gap: 4 }}>
-          <label>Release date</label>
-          <input
-            type="date"
-            value={releaseDate}
-            onChange={(e) => setReleaseDate(e.target.value)}
-            required
-            style={inputStyle}
-          />
-        </div>
-
-        <div style={{ display: "grid", gap: 4 }}>
-          <label>UPC (optional)</label>
-          <input
-            value={upc}
-            onChange={(e) => setUpc(e.target.value)}
-            style={inputStyle}
-          />
-        </div>
-
-        <div
-          style={{
-            marginTop: 10,
-            padding: 12,
-            borderRadius: 12,
-            border: "1px solid #23273c",
-            background: "#111320",
-          }}
-        >
-          <div
-            style={{ fontSize: 12, color: "#9ea4c2", marginBottom: 10 }}
-          >
-            Tracks
-          </div>
-          {tracks.map((track, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1.5fr 1fr 80px",
-                gap: 8,
-                marginBottom: 8,
-              }}
-            >
-              <input
-                placeholder="Title"
-                value={track.title}
-                onChange={(e) =>
-                  updateTrack(idx, "title", e.target.value)
-                }
-                style={inputStyle}
-              />
-              <input
-                placeholder="ISRC"
-                value={track.isrc}
-                onChange={(e) =>
-                  updateTrack(idx, "isrc", e.target.value)
-                }
-                style={inputStyle}
-              />
-              <input
-                type="number"
-                min={1}
-                value={track.trackNumber}
-                onChange={(e) =>
-                  updateTrack(idx, "trackNumber", e.target.value)
-                }
-                style={inputStyle}
-              />
+                <SelectContent>
+                  <SelectItem value="it">Italy</SelectItem>
+                  <SelectItem value="uk">UK</SelectItem>
+                  <SelectItem value="us">USA</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          ))}
 
-          <button
-            type="button"
-            onClick={addTrack}
-            style={secondaryButtonStyle}
-          >
-            + Add track
-          </button>
-        </div>
+            {/* Status */}
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Status</p>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={primaryButtonStyle}
-        >
-          {loading ? "Saving…" : "Create release"}
-        </button>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="ready">Ready</SelectItem>
+                  <SelectItem value="submitted">Submitted</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        {error && (
-          <p style={{ color: "#ff8a8a", fontSize: 12 }}>{error}</p>
+            <Textarea
+              placeholder="Notes for the campaign, press angles, links..."
+              helperText="Optional. Keep it short and actionable."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-input" />
+
+          {/* Step 2 */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold">Links & assets</h2>
+
+            <Input
+              label="Streaming link"
+              placeholder="https://open.spotify.com/..."
+              value={streamingLink}
+              onChange={(e) => setStreamingLink(e.target.value)}
+            />
+
+            <Input
+              label="Press folder link"
+              placeholder="https://drive.google.com/..."
+              value={pressFolderLink}
+              onChange={(e) => setPressFolderLink(e.target.value)}
+            />
+
+            <Input
+              label="Artwork link"
+              placeholder="https://..."
+              value={artworkLink}
+              onChange={(e) => setArtworkLink(e.target.value)}
+            />
+
+            <Textarea
+              placeholder="Private notes (internal only)..."
+              helperText="Optional. Not shared externally."
+              value={privateNotes}
+              onChange={(e) => setPrivateNotes(e.target.value)}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <Button variant="secondary" type="button" onClick={handleCancel}>
+              Cancel
+            </Button>
+
+            <Button
+              type="button"
+              loading={isSaving}
+              disabled={!canSave || isSaving}
+              onClick={handleSave}
+            >
+              Save draft
+            </Button>
+          </div>
+        </section>
+
+        {/* Debug (hydration-safe) */}
+        {SHOW_DEBUG && mounted && (
+          <section className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Payload preview (live)
+            </p>
+            <pre className="rounded-md border border-input bg-background p-4 text-xs overflow-auto">
+{JSON.stringify(buildPayload(), null, 2)}
+            </pre>
+          </section>
         )}
-      </form>
-
-      {result && (
-        <pre
-          style={{
-            marginTop: 24,
-            fontSize: 12,
-            background: "#0b0d14",
-            borderRadius: 10,
-            padding: 12,
-            border: "1px solid #23273c",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {JSON.stringify(result, null, 2)}
-        </pre>
-      )}
-    </div>
+      </div>
+    </main>
   );
 }
 
-const inputStyle: React.CSSProperties = {
-  padding: "8px 10px",
-  borderRadius: 8,
-  border: "1px solid #2b3043",
-  background: "#0f1117",
-  color: "#f5f5f7",
-  fontSize: 13,
-};
-
-const primaryButtonStyle: React.CSSProperties = {
-  marginTop: 4,
-  padding: "9px 12px",
-  borderRadius: 999,
-  border: "none",
-  fontSize: 13,
-  fontWeight: 600,
-  cursor: "pointer",
-  background:
-    "linear-gradient(135deg, #ff4b6a 0%, #ff8c4b 50%, #ffd15c 100%)",
-  color: "#0b0d14",
-};
-
-const secondaryButtonStyle: React.CSSProperties = {
-  marginTop: 6,
-  padding: "6px 10px",
-  borderRadius: 999,
-  border: "1px solid #2b3043",
-  fontSize: 12,
-  cursor: "pointer",
-  background: "#0f1117",
-  color: "#f5f5f7",
-};
